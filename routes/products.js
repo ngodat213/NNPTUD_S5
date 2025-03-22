@@ -2,28 +2,29 @@ var express = require('express');
 var router = express.Router();
 let productModel = require('../schemas/products')
 let categoryModel = require('../schemas/category')
-let {CreateErrorRes,
-  CreateSuccessRes} = require('../utils/responseHandler')
+let { CreateErrorRes, CreateSuccessRes } = require('../utils/responseHandler')
+let { check_authentication, check_roles, isAdmin, isModerator } = require('../utils/check_auth')
 
-/* GET users listing. */
+/* GET products listing. */
 router.get('/', async function(req, res, next) {
   let products = await productModel.find({
     isDeleted:false
   }).populate("category")
   CreateSuccessRes(res,products,200);
 });
+
 router.get('/:id', async function(req, res, next) {
   try {
     let product = await productModel.findOne({
       _id:req.params.id, isDeleted:false
-    }
-    )
+    })
     CreateSuccessRes(res,product,200);
   } catch (error) {
     next(error)
   }
 });
-router.post('/', async function(req, res, next) {
+
+router.post('/', check_authentication, isModerator, async function(req, res, next) {
   try {
     let body = req.body
     let category = await categoryModel.findOne({
@@ -45,7 +46,8 @@ router.post('/', async function(req, res, next) {
     next(error)
   }
 });
-router.put('/:id', async function(req, res, next) {
+
+router.put('/:id', check_authentication, isModerator, async function(req, res, next) {
   let id = req.params.id;
   try {
     let body = req.body
@@ -70,10 +72,10 @@ router.put('/:id', async function(req, res, next) {
     next(error)
   }
 });
-router.delete('/:id', async function(req, res, next) {
+
+router.delete('/:id', check_authentication, isAdmin, async function(req, res, next) {
   let id = req.params.id;
   try {
-    let body = req.body
     let updateProduct = await productModel.findByIdAndUpdate(
       id,{
         isDeleted:true

@@ -1,18 +1,19 @@
-let jwt = require('jsonwebtoken')
-let constants = require('../utils/constants')
-let userController = require('../controllers/users');
-const e = require('express');
-module.exports = {
-    check_authentication: async function (req, res, next) {
+const jwt = require('jsonwebtoken')
+const constants = require('./constants')
+const userModel = require('../schemas/user')
+const { CreateErrorRes } = require('./responseHandler')
+
+const check_authentication = async (req, res, next) => {
+    try {
         if (req.headers && req.headers.authorization) {
-            let authorization = req.headers.authorization;
+            let authorization = req.headers.authorization
             if (authorization.startsWith("Bearer")) {
                 let token = authorization.split(" ")[1]
-                let result = jwt.verify(token, constants.SECRET_KEY);
+                let result = jwt.verify(token, constants.SECRET_KEY)
                 if (result.expire > Date.now()) {
-                    let user = await userController.GetUserByID(result.id);
-                    req.user = user;
-                    next();
+                    let user = await userModel.findById(result.id).populate('role')
+                    req.user = user
+                    next()
                 } else {
                     throw new Error("ban chua dang nhap")
                 }
@@ -22,19 +23,30 @@ module.exports = {
         } else {
             throw new Error("ban chua dang nhap")
         }
-    },
-    check_authorization: function (roles) {
-        return async function (req, res, next) {
-            try {
-                let roleOfUser = req.user.role.name;
-                if (roles.includes(roleOfUser)) {
-                    next();
-                } else {
-                    throw new Error("ban khong co quyen")
-                }
-            } catch (error) {
-                next(error)
+    } catch (error) {
+        CreateErrorRes(res, error.message, 401)
+    }
+}
+
+const check_roles = (...roles) => {
+    return async (req, res, next) => {
+        try {
+            if (!req.user?.role?.name) {
+                throw new Error("Unauthorized")
             }
+            if (!roles.includes(req.user.role.name)) {
+                throw new Error("Insufficient permissions")
+            }
+            next()
+        } catch (error) {
+            CreateErrorRes(res, error.message, 403)
         }
     }
+}
+
+module.exports = {
+    check_authentication,
+    check_roles,
+    isAdmin: check_roles('admin'),
+    isModerator: check_roles('admin', 'mod')
 }

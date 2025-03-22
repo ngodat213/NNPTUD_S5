@@ -11,10 +11,10 @@ var usersRouter = require('./routes/users');
 
 var app = express();
 
-mongoose.connect("mongodb://localhost:27017/S5");
-mongoose.connection.on('connected',()=>{
-  console.log("connected");
-})
+mongoose.connect("mongodb+srv://hydra:Code26102003@cluster0.d0dwiwa.mongodb.net/dat_2003?retryWrites=true&w=majority&appName=Cluster0")
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.log('MongoDB Connection Error:', err));
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'pug');
@@ -42,6 +42,11 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
   CreateErrorRes(res,err.message,err.status||500);
+});
+
+const PORT = process.env.PORT || 3333;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 module.exports = app;

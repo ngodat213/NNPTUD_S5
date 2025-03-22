@@ -4,7 +4,7 @@ var userController = require('../controllers/users')
 let { CreateSuccessRes } = require('../utils/responseHandler');
 let jwt = require('jsonwebtoken')
 let constants = require('../utils/constants')
-let {check_authentication} = require('../utils/check_auth')
+let { check_authentication } = require('../utils/check_auth')
 
 /* GET home page. */
 router.post('/login', async function (req, res, next) {
@@ -35,8 +35,9 @@ router.post('/signup', async function (req, res, next) {
     } catch (error) {
         next(error)
     }
-})
-router.post('/changepassword',check_authentication, async function (req, res, next) {
+});
+
+router.post('/changepassword', check_authentication, async function (req, res, next) {
     try {
         let body = req.body;
         let oldpassword = body.oldpassword;
@@ -46,14 +47,10 @@ router.post('/changepassword',check_authentication, async function (req, res, ne
     } catch (error) {
         next(error)
     }
-    
-})
+});
 
-router.get('/me',check_authentication, async function (req, res, next) {
-    console.log(req.user);
+router.get('/me', check_authentication, async function (req, res, next) {
     CreateSuccessRes(res,req.user,200)
-})
+});
 
-
-//67de10517282904fbca502ae
 module.exports = router;

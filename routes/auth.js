@@ -4,6 +4,7 @@ var userController = require('../controllers/users')
 let { CreateSuccessRes } = require('../utils/responseHandler');
 let jwt = require('jsonwebtoken')
 let constants = require('../utils/constants')
+let {check_authentication} = require('../utils/check_auth')
 
 /* GET home page. */
 router.post('/login', async function (req, res, next) {
@@ -20,5 +21,9 @@ router.post('/login', async function (req, res, next) {
         next(error)
     }
 });
+router.get('/me',check_authentication, async function (req, res, next) {
+    console.log(req.user.role.name);
+    CreateSuccessRes(res,req.user,200)
+})
 //67de10517282904fbca502ae
 module.exports = router;

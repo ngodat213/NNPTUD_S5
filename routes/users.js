@@ -1,37 +1,21 @@
 var express = require('express');
 var router = express.Router();
 let userController = require('../controllers/users')
-let jwt = require('jsonwebtoken')
-let constants = require('../utils/constants')
-
+let { check_authentication,check_authorization } = require('../utils/check_auth')
 let { CreateSuccessRes } = require('../utils/responseHandler')
-
+let constants = require('../utils/constants')
 /* GET users listing. */
-router.get('/', async function (req, res, next) {
+router.get('/', check_authentication,
+  check_authorization(constants.ADMIN_PERMISSION)
+,async function (req, res, next) {
   try {
-    if (req.headers && req.headers.authorization) {
-      let authorization = req.headers.authorization;
-      if(authorization.startsWith("Bearer")){
-        let token =authorization.split(" ")[1]
-        let result = jwt.verify(token, constants.SECRET_KEY);
-        if (result.expire>Date.now()) {
-          let users = await userController.GetAllUsers();
-          CreateSuccessRes(res, users, 200);
-        }else{
-          throw new Error("ban chua dang nhap")
-        }
-      }else{
-        throw new Error("ban chua dang nhap")
-      }
-    } else {
-      throw new Error("ban chua dang nhap")
-    }
+    let users = await userController.GetAllUsers();
+    CreateSuccessRes(res, users, 200);
   } catch (error) {
     next(error)
   }
-
 });
-router.post('/', async function (req, res, next) {
+router.post('/',check_authentication, async function (req, res, next) {
   try {
     let body = req.body
     let user = await userController.CreateAnUser(

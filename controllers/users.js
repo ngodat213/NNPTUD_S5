@@ -8,13 +8,15 @@ module.exports = {
             status: false
         })
     },
-    GetAllUsersByID: async function (id) {
-        return await userModel.findById(id);
+    GetUserByID: async function (id) {
+        return await userModel.findById(id).populate({
+            path:'role',select:'name'
+        });
     },
-    GetAllUsersByUsername: async function (username) {
+    GetUserByUsername: async function (username) {
         return await userModel.findOne({
             username: username
-        });
+        }).populate('role');
     },
     CreateAnUser: async function (username, password, email, rolename) {
         try {
@@ -63,7 +65,7 @@ module.exports = {
         }
     },
     CheckLogin: async function (username, password) {
-        let user = await this.GetAllUsersByUsername(username);
+        let user = await this.GetUserByUsername(username);
         if (!user) {
             throw new Error("Username hoc password khong dung")
         } else {

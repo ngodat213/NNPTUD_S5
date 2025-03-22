@@ -75,5 +75,14 @@ module.exports = {
                 throw new Error("Username hoc password khong dung")
             }
         }
+    },
+    ChangePassword: async function(user,oldpassword,newpassword){
+        if(bcrypt.compareSync(oldpassword,user.password)){
+            user.password = newpassword;
+            return await user.save();
+        }else{
+            throw new Error('oldpassword khong dung')
+        }
     }
+    
 }
